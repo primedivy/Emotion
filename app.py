@@ -79,5 +79,8 @@ def get_emotion():
     return jsonify({'emotion': current_emotion, 'url': emotion_responses.get(current_emotion, '#')})
 
 # Run the app
+import os
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))  # Use the port Render provides
+    app.run(host='0.0.0.0', port=port)
