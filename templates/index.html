@@ -1,39 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-time Face Emotion Tracker</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .container { display: flex; flex-direction: column; align-items: center; }
-        #videoFeed { border: 2px solid #333; margin: 20px; }
-        #recommendation { margin: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #videoFeed {
+            border: 2px solid #333;
+            border-radius: 10px;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 640px;
+            width: 100%;
+        }
+
+        #recommendation {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #loadingMessage {
+            font-size: 16px;
+            color: #888;
+            display: none;
+        }
+
+        #youtubeLink {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        #youtubeLink:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        p {
+            font-size: 18px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
         <h1>Real-time Face Emotion Tracker</h1>
-        <img id="videoFeed" src="{{ url_for('video_feed') }}" width="640" height="480">
+        
+        <!-- Video Feed -->
+        <video id="videoFeed" autoplay></video>
+        
+        <!-- Emotion Tracker -->
         <div id="recommendation">
             <h2>Current Recommendation:</h2>
             <p id="currentEmotion">No emotion detected yet</p>
             <a id="youtubeLink" href="#" target="_blank">Open YouTube Recommendation</a>
+            <p id="loadingMessage">Loading emotion data...</p>
         </div>
     </div>
-    
+
     <script>
-        // You can use WebSocket or AJAX to get real-time emotion updates from the backend
-        // This is a simplified version
+        // Access the webcam and set up the video feed
+        const video = document.getElementById('videoFeed');
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error('Error accessing webcam: ', err);
+            });
+
+        // Fetch emotion data every second
         setInterval(() => {
+            document.getElementById('loadingMessage').style.display = 'block';
+            
             fetch('/get_emotion')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('currentEmotion').textContent = 
-                        `Current emotion: ${data.emotion}`;
-                    document.getElementById('youtubeLink').textContent = 
-                        `Open ${data.emotion} content on YouTube`;
-                    document.getElementById('youtubeLink').href = data.url;
+                    document.getElementById('loadingMessage').style.display = 'none';
+
+                    if (data.emotion) {
+                        // Update the emotion and recommendation link
+                        document.getElementById('currentEmotion').textContent = 
+                            `Current emotion: ${data.emotion}`;
+                        document.getElementById('youtubeLink').textContent = 
+                            `Open ${data.emotion} content on YouTube`;
+                        document.getElementById('youtubeLink').href = data.url;
+                    } else {
+                        // Handle case where no emotion is detected
+                        document.getElementById('currentEmotion').textContent = 'No emotion detected yet';
+                        document.getElementById('youtubeLink').href = '#';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching emotion data:', err);
+                    document.getElementById('loadingMessage').style.display = 'none';
+                    document.getElementById('currentEmotion').textContent = 'Error fetching emotion data';
+                    document.getElementById('youtubeLink').href = '#';
                 });
         }, 1000);
     </script>
+
 </body>
 </html>
