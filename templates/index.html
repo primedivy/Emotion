@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-time Face Emotion Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { display: flex; flex-direction: column; align-items: center; }
+        #videoFeed { border: 2px solid #333; margin: 20px; }
+        #recommendation { margin: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real-time Face Emotion Tracker</h1>
+        <img id="videoFeed" src="{{ url_for('video_feed') }}" width="640" height="480">
+        <div id="recommendation">
+            <h2>Current Recommendation:</h2>
+            <p id="currentEmotion">No emotion detected yet</p>
+            <a id="youtubeLink" href="#" target="_blank">Open YouTube Recommendation</a>
+        </div>
+    </div>
+    
+    <script>
+        // You can use WebSocket or AJAX to get real-time emotion updates from the backend
+        // This is a simplified version
+        setInterval(() => {
+            fetch('/get_emotion')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentEmotion').textContent = 
+                        `Current emotion: ${data.emotion}`;
+                    document.getElementById('youtubeLink').textContent = 
+                        `Open ${data.emotion} content on YouTube`;
+                    document.getElementById('youtubeLink').href = data.url;
+                });
+        }, 1000);
+    </script>
+</body>
+</html>
